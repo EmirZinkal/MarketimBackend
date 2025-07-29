@@ -58,8 +58,6 @@ namespace DataAccess.Concrete.EntityFramework.Contexts
             modelBuilder.Entity<Product>()
                 .Property(p => p.Price)
                 .HasColumnType("decimal(10,2)");
-
-
         }
     }
 }
