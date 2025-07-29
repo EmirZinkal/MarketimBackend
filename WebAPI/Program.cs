@@ -1,10 +1,22 @@
+using Autofac.Extensions.DependencyInjection;
+using Autofac;
 using DataAccess.Concrete.EntityFramework.Contexts;
 using Microsoft.EntityFrameworkCore;
+using Business.DependencyResolvers.Autofac;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// ?? Default DI yerine Autofac kullanacaðýmýzý belirtiyoruz
+builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
+
+// ?? Autofac Modülünü yüklüyoruz
+builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
+{
+    containerBuilder.RegisterModule(new AutofacBusinessModule());
+});
 
 
 // Add services to the container.
