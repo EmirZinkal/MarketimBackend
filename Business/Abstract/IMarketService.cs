@@ -10,9 +10,9 @@ namespace Business.Abstract
     public interface IMarketService
     {
         void Add(Market market);
-        void Update(User user);
-        void Delete(User user);
-        User GetById(int id);
-        List<User> GetAll();
+        void Update(Market market);
+        void Delete(Market market);
+        Market GetById(int id);
+        List<Market> GetAll();
     }
 }
