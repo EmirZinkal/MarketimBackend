@@ -1,4 +1,8 @@
 ﻿using Business.Abstract;
+using Business.Constants;
+using Core.Utilities.Results;
+using DataAccess.Abstract;
+using DataAccess.Concrete.EntityFramework;
 using Entities.Concrete;
 using System;
 using System.Collections.Generic;
@@ -10,29 +14,39 @@ namespace Business.Concrete
 {
     public class MessageManager : IMessageService
     {
-        public void Add(Message message)
+        private readonly IMessageDal _messageDal;
+
+        public MessageManager(IMessageDal messageDal)
         {
-            throw new NotImplementedException();
+            _messageDal = messageDal;
         }
 
-        public void Delete(Message message)
+        public IResult Add(Message message)
         {
-            throw new NotImplementedException();
+            _messageDal.Add(message);
+            return new SuccessResult(Messages.MessageAdded);
         }
 
-        public List<Message> GetAll()
+        public IResult Update(Message message)
         {
-            throw new NotImplementedException();
+            _messageDal.Update(message);
+            return new SuccessResult(Messages.MessageUpdated);
         }
 
-        public Message GetById(int id)
+        public IResult Delete(Message message)
         {
-            throw new NotImplementedException();
+            _messageDal.Delete(message);
+            return new SuccessResult(Messages.MessageDeleted);
         }
 
-        public void Update(Message message)
+        public IDataResult<Message> GetById(int id)
         {
-            throw new NotImplementedException();
+            return new SuccessDataResult<Message>(_messageDal.Get(u => u.Id == id));
+        }
+
+        public IDataResult<List<Message>> GetAll()
+        {
+            return new SuccessDataResult<List<Message>>(_messageDal.GetList().ToList());
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Entities.Concrete;
+﻿using Core.Utilities.Results;
+using Entities.Concrete;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,10 +10,10 @@ namespace Business.Abstract
 {
     public interface IMessageService
     {
-        void Add(Message message);
-        void Update(Message message);
-        void Delete(Message message);
-        Message GetById(int id);
-        List<Message> GetAll();
+        IResult Add(Message message);
+        IResult Update(Message message);
+        IResult Delete(Message message);
+        IDataResult<Message> GetById(int id);
+        IDataResult<List<Message>> GetAll();
     }
 }

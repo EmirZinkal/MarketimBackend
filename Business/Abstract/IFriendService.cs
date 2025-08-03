@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Core.Utilities.Results;
+using Entities.Concrete;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,5 +10,10 @@ namespace Business.Abstract
 {
     public interface IFriendService
     {
+        IResult Add(Friend friend);
+        IResult Update(Friend friend);
+        IResult Delete(Friend friend);
+        IDataResult<Friend> GetById(int id);
+        IDataResult<List<Friend>> GetAll();
     }
 }

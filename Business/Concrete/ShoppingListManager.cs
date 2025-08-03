@@ -1,4 +1,7 @@
 ﻿using Business.Abstract;
+using Business.Constants;
+using Core.Utilities.Results;
+using DataAccess.Abstract;
 using Entities.Concrete;
 using System;
 using System.Collections.Generic;
@@ -10,29 +13,39 @@ namespace Business.Concrete
 {
     public class ShoppingListManager : IShoppingListService
     {
-        public void Add(ShoppingList shoppingList)
+        private readonly IShoppingListDal _shoppingListDal;
+
+        public ShoppingListManager(IShoppingListDal shoppingListDal)
         {
-            throw new NotImplementedException();
+            _shoppingListDal = shoppingListDal;
         }
 
-        public void Delete(ShoppingList shoppingList)
+        public IResult Add(ShoppingList shoppingList)
         {
-            throw new NotImplementedException();
+            _shoppingListDal.Add(shoppingList);
+            return new SuccessResult(Messages.ShoppingListAdded);
         }
 
-        public List<ShoppingList> GetAll()
+        public IResult Delete(ShoppingList shoppingList)
         {
-            throw new NotImplementedException();
+            _shoppingListDal.Delete(shoppingList);
+            return new SuccessResult(Messages.ShoppingListDeleted);
         }
 
-        public ShoppingList GetById(int id)
+        public IDataResult<List<ShoppingList>> GetAll()
         {
-            throw new NotImplementedException();
+            return new SuccessDataResult<List<ShoppingList>>(_shoppingListDal.GetList().ToList());
         }
 
-        public void Update(ShoppingList shoppingList)
+        public IDataResult<ShoppingList> GetById(int id)
         {
-            throw new NotImplementedException();
+            return new SuccessDataResult<ShoppingList>(_shoppingListDal.Get(u => u.Id == id));
+        }
+
+        public IResult Update(ShoppingList shoppingList)
+        {
+            _shoppingListDal.Update(shoppingList);
+            return new SuccessResult(Messages.ShoppingListUpdated);
         }
     }
 }

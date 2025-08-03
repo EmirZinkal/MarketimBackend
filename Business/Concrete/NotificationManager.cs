@@ -1,4 +1,8 @@
 ﻿using Business.Abstract;
+using Business.Constants;
+using Core.Utilities.Results;
+using DataAccess.Abstract;
+using Entities.Concrete;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +11,41 @@ using System.Threading.Tasks;
 
 namespace Business.Concrete
 {
-    public class NotificationManager:INotificationService
+    public class NotificationManager : INotificationService
     {
+        private readonly INotificationDal _notificationDal;
+
+        public NotificationManager(INotificationDal notificationDal)
+        {
+            _notificationDal = notificationDal;
+        }
+
+        public IResult Add(Notification notification)
+        {
+            _notificationDal.Add(notification);
+            return new SuccessResult(Messages.NotificationAdded);
+        }
+
+        public IResult Delete(Notification notification)
+        {
+            _notificationDal.Delete(notification);
+            return new SuccessResult(Messages.NotificationDeleted);
+        }
+
+        public IDataResult<List<Notification>> GetAll()
+        {
+            return new SuccessDataResult<List<Notification>>(_notificationDal.GetList().ToList());
+        }
+
+        public IDataResult<Notification> GetById(int id)
+        {
+            return new SuccessDataResult<Notification>(_notificationDal.Get(u=>u.Id == id));
+        }
+
+        public IResult Update(Notification notification)
+        {
+            _notificationDal.Update(notification);
+            return new SuccessResult(Messages.NotificationUpdated);
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Entities.Concrete;
+﻿using Core.Utilities.Results;
+using Entities.Concrete;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,10 +10,10 @@ namespace Business.Abstract
 {
     public interface IMarketService
     {
-        void Add(Market market);
-        void Update(Market market);
-        void Delete(Market market);
-        Market GetById(int id);
-        List<Market> GetAll();
+        IResult Add(Market market);
+        IResult Update(Market market);
+        IResult Delete(Market market);
+        IDataResult<Market> GetById(int id);
+        IDataResult<List<Market>> GetAll();
     }
 }
