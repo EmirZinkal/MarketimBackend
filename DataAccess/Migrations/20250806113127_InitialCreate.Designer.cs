@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250729052947_InitialCreate")]
+    [Migration("20250806113127_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -24,6 +24,86 @@ namespace DataAccess.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("Core.Entities.Concrete.OperationClaim", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("OperationClaims");
+                });
+
+            modelBuilder.Entity("Core.Entities.Concrete.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("nvarchar(8)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastLoginAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users");
+
+                    b.HasDiscriminator().HasValue("User");
+
+                    b.UseTphMappingStrategy();
+                });
+
+            modelBuilder.Entity("Core.Entities.Concrete.UserOperationClaim", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserOperationClaims");
+                });
 
             modelBuilder.Entity("Entities.Concrete.Friend", b =>
                 {
@@ -148,7 +228,7 @@ namespace DataAccess.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(10,2)");
 
                     b.Property<DateTime>("PurchaseDate")
                         .HasColumnType("datetime2");
@@ -197,46 +277,41 @@ namespace DataAccess.Migrations
                     b.ToTable("ShoppingLists");
                 });
 
-            modelBuilder.Entity("Entities.Concrete.User", b =>
+            modelBuilder.Entity("Entities.Concrete.AppUser", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.HasBaseType("Core.Entities.Concrete.User");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.HasDiscriminator().HasValue("AppUser");
+                });
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+            modelBuilder.Entity("Core.Entities.Concrete.UserOperationClaim", b =>
+                {
+                    b.HasOne("Core.Entities.Concrete.OperationClaim", "OperationClaim")
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.HasOne("Core.Entities.Concrete.User", "User")
+                        .WithMany("UserOperationClaims")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Navigation("OperationClaim");
 
-                    b.Property<DateTime?>("LastLoginAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Users");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Entities.Concrete.Friend", b =>
                 {
-                    b.HasOne("Entities.Concrete.User", "FriendUser")
+                    b.HasOne("Entities.Concrete.AppUser", "FriendUser")
                         .WithMany("FriendOf")
                         .HasForeignKey("FriendId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Entities.Concrete.User", "User")
+                    b.HasOne("Entities.Concrete.AppUser", "User")
                         .WithMany("Friends")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -249,13 +324,13 @@ namespace DataAccess.Migrations
 
             modelBuilder.Entity("Entities.Concrete.Message", b =>
                 {
-                    b.HasOne("Entities.Concrete.User", "Receiver")
+                    b.HasOne("Entities.Concrete.AppUser", "Receiver")
                         .WithMany("ReceivedMessages")
                         .HasForeignKey("ReceiverId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Entities.Concrete.User", "Sender")
+                    b.HasOne("Entities.Concrete.AppUser", "Sender")
                         .WithMany("SentMessages")
                         .HasForeignKey("SenderId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -268,7 +343,7 @@ namespace DataAccess.Migrations
 
             modelBuilder.Entity("Entities.Concrete.Notification", b =>
                 {
-                    b.HasOne("Entities.Concrete.User", "User")
+                    b.HasOne("Entities.Concrete.AppUser", "User")
                         .WithMany("Notifications")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -285,7 +360,7 @@ namespace DataAccess.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Entities.Concrete.User", "User")
+                    b.HasOne("Entities.Concrete.AppUser", "User")
                         .WithMany("Products")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -298,7 +373,7 @@ namespace DataAccess.Migrations
 
             modelBuilder.Entity("Entities.Concrete.ShoppingList", b =>
                 {
-                    b.HasOne("Entities.Concrete.User", "User")
+                    b.HasOne("Entities.Concrete.AppUser", "User")
                         .WithMany("ShoppingLists")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -307,12 +382,17 @@ namespace DataAccess.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Core.Entities.Concrete.User", b =>
+                {
+                    b.Navigation("UserOperationClaims");
+                });
+
             modelBuilder.Entity("Entities.Concrete.Market", b =>
                 {
                     b.Navigation("Products");
                 });
 
-            modelBuilder.Entity("Entities.Concrete.User", b =>
+            modelBuilder.Entity("Entities.Concrete.AppUser", b =>
                 {
                     b.Navigation("FriendOf");
 

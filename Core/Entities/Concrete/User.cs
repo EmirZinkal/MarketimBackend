@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Entities.Concrete
+namespace Core.Entities.Concrete
 {
     public class User : IEntity
     {
@@ -17,12 +17,6 @@ namespace Entities.Concrete
         public DateTime? LastLoginAt { get; set; }
 
         // Navigation
-        public ICollection<Product> Products { get; set; }
-        public ICollection<ShoppingList> ShoppingLists { get; set; }
-        public ICollection<Friend> Friends { get; set; }
-        public ICollection<Friend> FriendOf { get; set; }
-        public ICollection<Message> SentMessages { get; set; }
-        public ICollection<Message> ReceivedMessages { get; set; }
-        public ICollection<Notification> Notifications { get; set; }
+        public ICollection<UserOperationClaim> UserOperationClaims { get; set; }
     }
 }

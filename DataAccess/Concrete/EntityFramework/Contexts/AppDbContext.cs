@@ -1,4 +1,5 @@
-﻿using Entities.Concrete;
+﻿using Core.Entities.Concrete;
+using Entities.Concrete;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -14,10 +15,10 @@ namespace DataAccess.Concrete.EntityFramework.Contexts
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //{
-        //    optionsBuilder.UseSqlServer(connectionString: @"Server=(localdb)\mssqllocaldb;Database=Marketim;Trusted_Connection=true");
-        //}
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlServer(connectionString: @"Server=(localdb)\mssqllocaldb;Database=MarketimDb;Trusted_Connection=true");
+        }
 
         public DbSet<User> Users { get; set; }
         public DbSet<ShoppingList> ShoppingLists { get; set; }
@@ -26,6 +27,9 @@ namespace DataAccess.Concrete.EntityFramework.Contexts
         public DbSet<Message> Messages { get; set; }
         public DbSet<Market> Markets { get; set; }
         public DbSet<Friend> Friends { get; set; }
+        public DbSet<OperationClaim> OperationClaims { get; set; }
+        public DbSet<UserOperationClaim> UserOperationClaims { get; set; }
+        public DbSet<AppUser> AppUsers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -60,6 +64,21 @@ namespace DataAccess.Concrete.EntityFramework.Contexts
             modelBuilder.Entity<Product>()
                 .Property(p => p.Price)
                 .HasColumnType("decimal(10,2)");
+
+            modelBuilder.Entity<UserOperationClaim>()
+                .HasOne(uoc => uoc.User)
+                .WithMany(u => u.UserOperationClaims)
+                .HasForeignKey(uoc => uoc.UserId);
+
+            modelBuilder.Entity<UserOperationClaim>()
+                .HasOne(uoc => uoc.OperationClaim)
+                .WithMany()
+                .HasForeignKey(uoc => uoc.RoleId);
+
+            modelBuilder.Entity<User>()
+                .HasDiscriminator<string>("Discriminator")
+                .HasValue<User>("User")
+                .HasValue<AppUser>("AppUser");
         }
     }
 }

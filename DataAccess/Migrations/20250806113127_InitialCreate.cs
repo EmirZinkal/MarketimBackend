@@ -26,6 +26,19 @@ namespace DataAccess.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "OperationClaims",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OperationClaims", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -35,7 +48,8 @@ namespace DataAccess.Migrations
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastLoginAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    LastLoginAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Discriminator = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -127,7 +141,7 @@ namespace DataAccess.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
                     PurchaseDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     MarketId = table.Column<int>(type: "int", nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: false)
@@ -166,6 +180,32 @@ namespace DataAccess.Migrations
                     table.PrimaryKey("PK_ShoppingLists", x => x.Id);
                     table.ForeignKey(
                         name: "FK_ShoppingLists_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserOperationClaims",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    RoleId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserOperationClaims", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserOperationClaims_OperationClaims_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "OperationClaims",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserOperationClaims_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -211,6 +251,16 @@ namespace DataAccess.Migrations
                 name: "IX_ShoppingLists_UserId",
                 table: "ShoppingLists",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserOperationClaims_RoleId",
+                table: "UserOperationClaims",
+                column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserOperationClaims_UserId",
+                table: "UserOperationClaims",
+                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -232,7 +282,13 @@ namespace DataAccess.Migrations
                 name: "ShoppingLists");
 
             migrationBuilder.DropTable(
+                name: "UserOperationClaims");
+
+            migrationBuilder.DropTable(
                 name: "Markets");
+
+            migrationBuilder.DropTable(
+                name: "OperationClaims");
 
             migrationBuilder.DropTable(
                 name: "Users");

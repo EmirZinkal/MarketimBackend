@@ -6,6 +6,7 @@ using Business.Abstract;
 using Business.Concrete;
 using DataAccess.Abstract;
 using DataAccess.Concrete.EntityFramework;
+using Core.Utilities.Security.Jwt;
 
 namespace Business.DependencyResolvers.Autofac
 {
@@ -34,6 +35,8 @@ namespace Business.DependencyResolvers.Autofac
             builder.RegisterType<FriendManager>().As<IFriendService>();
             builder.RegisterType<EfFriendDal>().As<IFriendDal>();
 
+            builder.RegisterType<AuthManager>().As<IAuthService>();
+            builder.RegisterType<JwtHelper>().As<ITokenHelper>();
         }
     }
 }

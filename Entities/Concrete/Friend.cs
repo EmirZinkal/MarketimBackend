@@ -1,4 +1,5 @@
 ﻿using Core.Entities;
+using Core.Entities.Concrete;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,10 +13,10 @@ namespace Entities.Concrete
         public int Id { get; set; }
 
         public int UserId { get; set; }
-        public User User { get; set; }
+        public AppUser User { get; set; }
 
         public int FriendId { get; set; }
-        public User FriendUser { get; set; }
+        public AppUser FriendUser { get; set; }
 
         public DateTime CreatedAt { get; set; }
     }
