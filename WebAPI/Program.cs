@@ -3,11 +3,36 @@ using Autofac;
 using DataAccess.Concrete.EntityFramework.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Business.DependencyResolvers.Autofac;
+using Core.Utilities.Security.Jwt;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Core.Utilities.Security.Encyption;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+var tokenOptions = builder.Configuration.GetSection("TokenOptions").Get<TokenOptions>();
+
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+
+            ValidIssuer = tokenOptions.Issuer,
+            ValidAudience = tokenOptions.Audience,
+            IssuerSigningKey = SecurityKeyHelper.CreateSecurityKey(tokenOptions.SecurityKey),
+
+            ClockSkew = TimeSpan.Zero // süre dolduðunda hemen geçersiz olsun
+        };
+    });
 
 // ?? Default DI yerine Autofac kullanacaðýmýzý belirtiyoruz
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());

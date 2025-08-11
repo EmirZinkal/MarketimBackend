@@ -30,7 +30,7 @@ namespace DataAccess.Concrete.EntityFramework.Contexts
         public DbSet<OperationClaim> OperationClaims { get; set; }
         public DbSet<UserOperationClaim> UserOperationClaims { get; set; }
         public DbSet<AppUser> AppUsers { get; set; }
-
+        public DbSet<PasswordResetToken> PasswordResetTokens { get; set; } = null!;
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -79,6 +79,21 @@ namespace DataAccess.Concrete.EntityFramework.Contexts
                 .HasDiscriminator<string>("Discriminator")
                 .HasValue<User>("User")
                 .HasValue<AppUser>("AppUser");
+
+            modelBuilder.Entity<OperationClaim>().HasData(
+                 new OperationClaim { Id = 1, Name = "Admin" },
+                 new OperationClaim { Id = 2, Name = "Member" }
+            );
+
+            modelBuilder.Entity<PasswordResetToken>(b =>
+            {
+                b.ToTable("PasswordResetTokens");
+                b.HasKey(x => x.Id);
+                b.Property(x => x.TokenHash).IsRequired().HasMaxLength(256);
+                b.Property(x => x.IpAddress).HasMaxLength(64);
+                b.HasIndex(x => x.TokenHash).IsUnique(); // aynı token hash’i bir kez
+                b.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+            });
         }
     }
 }
