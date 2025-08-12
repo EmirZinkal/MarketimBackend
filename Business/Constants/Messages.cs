@@ -35,6 +35,12 @@
         public static string SuccessfulLogin="Sisteme giriş başarılı";
         public static string UserAlreadyExists = "Bu kullanıcı zaten mevcut";
         public static string UserRegistered = "Kullanıcı başarıyla kaydedildi";
-        public static string AccessTokenCreated="Access token başarıyla oluşturuldu";
+        public static string AccessTokenCreated= "Access token başarıyla oluşturuldu";
+
+        public static string PasswordResetEmailSent = "Şifre sıfırlama maili gönderildi!";
+
+        public static string PasswordChanged = "Şifre Değiştirildi.";
+
+        public static string InvalidOrExpiredToken = "Geçersiz veya süresi geçmiş token!";
     }
 }

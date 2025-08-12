@@ -4,10 +4,14 @@ using Core.Entities.Concrete;
 using Core.Utilities.Results;
 using Core.Utilities.Security.Hashing;
 using Core.Utilities.Security.Jwt;
+using DataAccess.Abstract;
+using Entities.Concrete;
 using Entities.Dtos;
+using Entities.Dtos.Auth;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,11 +21,14 @@ namespace Business.Concrete
     {
         private readonly IUserService _userService;
         private readonly ITokenHelper _tokenHelper;
+        private readonly IPasswordResetTokenDal _passwordResetTokenDal;
 
-        public AuthManager(IUserService userService, ITokenHelper tokenHelper)
+
+        public AuthManager(IUserService userService, ITokenHelper tokenHelper, IPasswordResetTokenDal passwordResetTokenDal)
         {
             _userService = userService;
             _tokenHelper = tokenHelper;
+            _passwordResetTokenDal = passwordResetTokenDal;
         }
 
         public IDataResult<User> Register(UserForRegisterDto userForRegisterDto, string password)
@@ -70,6 +77,76 @@ namespace Business.Concrete
             var claims = _userService.GetClaims(user).Data;
             var accessToken = _tokenHelper.CreateToken(user, claims);
             return new SuccessDataResult<AccessToken>(accessToken, Messages.AccessTokenCreated);
+        }
+
+        public IResult SendPasswordResetEmail(ForgotPasswordRequestDto request)
+        {
+            var userResult = _userService.GetByMail(request.Email);
+            if (!userResult.Success || userResult.Data == null)
+                return new ErrorResult(Messages.UserNotFound);
+
+            // Token üret
+            var token = Guid.NewGuid().ToString("N");
+
+            var resetToken = new PasswordResetToken
+            {
+                UserId = userResult.Data.Id,
+                Token = token,
+                ExpireDate = DateTime.Now.AddMinutes(15),
+                IsUsed = false
+            };
+
+            _passwordResetTokenDal.Add(resetToken);
+
+            // Link oluştur
+            var resetLink = $"https://seninfrontendadresin.com/reset-password?token={token}";
+
+            // Mail gönder
+            SendEmail(request.Email, "Şifre Sıfırlama",
+                $"Merhaba {userResult.Data.FullName},\n\n" +
+                $"Şifrenizi sıfırlamak için aşağıdaki bağlantıya tıklayın:\n{resetLink}\n\n" +
+                $"Bu bağlantı 15 dakika boyunca geçerlidir.");
+
+            return new SuccessResult(Messages.PasswordResetEmailSent);
+        }
+
+        public IResult ResetPassword(ResetPasswordRequestDto request)
+        {
+            var tokenEntity = _passwordResetTokenDal
+                .Get(t => t.Token == request.Token && !t.IsUsed && t.ExpireDate > DateTime.Now);
+
+            if (tokenEntity == null)
+                return new ErrorResult(Messages.InvalidOrExpiredToken);
+
+            var userResult = _userService.GetById(tokenEntity.UserId);
+            if (!userResult.Success || userResult.Data == null)
+                return new ErrorResult(Messages.UserNotFound);
+
+            // Şifre hashle (senin helper’a göre)
+            HashingHelper.CreatePasswordHash(request.NewPassword, out byte[] passwordHash);
+            userResult.Data.PasswordHash = Convert.ToBase64String(passwordHash);
+
+            _userService.Update(userResult.Data);
+
+            // Token’i kullanıldı olarak işaretle
+            tokenEntity.IsUsed = true;
+            _passwordResetTokenDal.Update(tokenEntity);
+
+            return new SuccessResult(Messages.PasswordChanged);
+        }
+
+        private void SendEmail(string to, string subject, string body)
+        {
+            using (var client = new SmtpClient("smtp.gmail.com", 587))
+            {
+                client.Credentials = new System.Net.NetworkCredential(
+                    "emir.zinkal.34@gmail.com",
+                    "şifre"
+                );
+                client.EnableSsl = true;
+                var mailMessage = new MailMessage("emir.zinkal.34@gmail.com", to, subject, body);
+                client.Send(mailMessage);
+            }
         }
     }
 }

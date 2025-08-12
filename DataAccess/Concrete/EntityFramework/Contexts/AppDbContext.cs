@@ -85,14 +85,23 @@ namespace DataAccess.Concrete.EntityFramework.Contexts
                  new OperationClaim { Id = 2, Name = "Member" }
             );
 
-            modelBuilder.Entity<PasswordResetToken>(b =>
+            modelBuilder.Entity<PasswordResetToken>(entity =>
             {
-                b.ToTable("PasswordResetTokens");
-                b.HasKey(x => x.Id);
-                b.Property(x => x.TokenHash).IsRequired().HasMaxLength(256);
-                b.Property(x => x.IpAddress).HasMaxLength(64);
-                b.HasIndex(x => x.TokenHash).IsUnique(); // aynı token hash’i bir kez
-                b.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+                entity.HasKey(x => x.Id);
+                entity.Property(x => x.Token)
+                      .IsRequired()
+                      .HasMaxLength(200);
+
+                entity.Property(x => x.ExpireDate)
+                      .IsRequired();
+
+                entity.Property(x => x.IsUsed)
+                      .HasDefaultValue(false);
+
+                entity.HasOne(x => x.User)
+                      .WithMany()
+                      .HasForeignKey(x => x.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }
