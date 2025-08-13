@@ -1,5 +1,7 @@
 ﻿using Business.Abstract;
 using Business.Constants;
+using Business.ValidationRules.FluentValidation;
+using Core.Aspects.Autofac.Validation;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
 using Entities.Concrete;
@@ -19,6 +21,7 @@ namespace Business.Concrete
         {
             _friendDal = friendDal;
         }
+        [ValidationAspect(typeof(FriendValidator))]
         public IResult Add(Friend friend)
         {
             _friendDal.Add(friend);
@@ -40,7 +43,7 @@ namespace Business.Concrete
         {
             return new SuccessDataResult<Friend>(_friendDal.Get(u=>u.Id == id));
         }
-
+        [ValidationAspect(typeof(FriendValidator))]
         public IResult Update(Friend friend)
         {
             _friendDal.Update(friend);

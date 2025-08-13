@@ -1,6 +1,7 @@
 ﻿using Business.Abstract;
 using Core.Entities.Concrete;
 using Entities.Concrete;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -63,6 +64,16 @@ namespace WebAPI.Controllers
             if (result.Success)
                 return Ok(result);
             return BadRequest(result);
+        }
+
+        [HttpPost("assign-role")]
+        [Authorize(Roles = "Admin")]
+        public IActionResult AssignRole(int userId, int roleId)
+        {
+            var result = _userService.AssignRole(userId, roleId);
+            if (!result.Success)
+                return BadRequest(result.Message);
+            return Ok(result.Message);
         }
 
     }

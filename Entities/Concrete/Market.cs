@@ -14,6 +14,6 @@ namespace Entities.Concrete
         public DateTime CreatedAt { get; set; }
 
         // Navigation
-        public ICollection<Product> Products { get; set; }
+        public ICollection<Product>? Products { get; set; }
     }
 }

@@ -5,6 +5,7 @@ using Core.Utilities.Results;
 using Core.Utilities.Security.Hashing;
 using Core.Utilities.Security.Jwt;
 using DataAccess.Abstract;
+using DataAccess.Concrete.EntityFramework;
 using Entities.Concrete;
 using Entities.Dtos;
 using Entities.Dtos.Auth;
@@ -22,13 +23,15 @@ namespace Business.Concrete
         private readonly IUserService _userService;
         private readonly ITokenHelper _tokenHelper;
         private readonly IPasswordResetTokenDal _passwordResetTokenDal;
+        private readonly IUserOperationClaimDal _userOperationClaimDal;
 
 
-        public AuthManager(IUserService userService, ITokenHelper tokenHelper, IPasswordResetTokenDal passwordResetTokenDal)
+        public AuthManager(IUserService userService, ITokenHelper tokenHelper, IPasswordResetTokenDal passwordResetTokenDal, IUserOperationClaimDal userOperationClaimDal)
         {
             _userService = userService;
             _tokenHelper = tokenHelper;
             _passwordResetTokenDal = passwordResetTokenDal;
+            _userOperationClaimDal = userOperationClaimDal;
         }
 
         public IDataResult<User> Register(UserForRegisterDto userForRegisterDto, string password)
@@ -45,6 +48,13 @@ namespace Business.Concrete
             };
 
             _userService.Add(user);
+
+            var memberRoleId = 2; // OperationClaims tablosunda Member rolünün ID'si
+            _userOperationClaimDal.Add(new UserOperationClaim
+            {
+                UserId = user.Id,
+                RoleId = memberRoleId
+            });
             return new SuccessDataResult<User>(user, Messages.UserRegistered);
         }
 
@@ -141,7 +151,7 @@ namespace Business.Concrete
             {
                 client.Credentials = new System.Net.NetworkCredential(
                     "emir.zinkal.34@gmail.com",
-                    "şifre"
+                    "Şifre"
                 );
                 client.EnableSsl = true;
                 var mailMessage = new MailMessage("emir.zinkal.34@gmail.com", to, subject, body);

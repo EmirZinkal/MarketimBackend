@@ -1,5 +1,7 @@
 ﻿using Business.Abstract;
 using Business.Constants;
+using Business.ValidationRules.FluentValidation;
+using Core.Aspects.Autofac.Validation;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
 using Entities.Concrete;
@@ -19,7 +21,7 @@ namespace Business.Concrete
         {
             _shoppingListDal = shoppingListDal;
         }
-
+        [ValidationAspect(typeof(ShoppingListValidator))]
         public IResult Add(ShoppingList shoppingList)
         {
             _shoppingListDal.Add(shoppingList);
@@ -41,7 +43,7 @@ namespace Business.Concrete
         {
             return new SuccessDataResult<ShoppingList>(_shoppingListDal.Get(u => u.Id == id));
         }
-
+        [ValidationAspect(typeof(ShoppingListValidator))]
         public IResult Update(ShoppingList shoppingList)
         {
             _shoppingListDal.Update(shoppingList);

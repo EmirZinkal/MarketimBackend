@@ -1,5 +1,7 @@
 ﻿using Business.Abstract;
 using Business.Constants;
+using Business.ValidationRules.FluentValidation;
+using Core.Aspects.Autofac.Validation;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
 using DataAccess.Concrete.EntityFramework;
@@ -20,13 +22,13 @@ namespace Business.Concrete
         {
             _messageDal = messageDal;
         }
-
+        [ValidationAspect(typeof(MessageValidator))]
         public IResult Add(Message message)
         {
             _messageDal.Add(message);
             return new SuccessResult(Messages.MessageAdded);
         }
-
+        [ValidationAspect(typeof(MessageValidator))]
         public IResult Update(Message message)
         {
             _messageDal.Update(message);

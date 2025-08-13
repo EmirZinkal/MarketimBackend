@@ -15,10 +15,13 @@ namespace Business.Concrete
     public class UserManager : IUserService
     {
         private readonly IUserDal _userDal;
+        private readonly IUserOperationClaimDal _userOperationClaimDal;
 
-        public UserManager(IUserDal userDal)
+
+        public UserManager(IUserDal userDal, IUserOperationClaimDal userOperationClaimDal)
         {
             _userDal = userDal;
+            _userOperationClaimDal = userOperationClaimDal;
         }
 
         public IResult Add(User user)
@@ -57,6 +60,31 @@ namespace Business.Concrete
         public IDataResult<User> GetByMail(string email)
         {
             return new SuccessDataResult<User>(_userDal.Get(filter: u => u.Email == email));
+        }
+        public IResult AssignRole(int userId, int roleId)
+        {
+            var user = _userDal.Get(u => u.Id == userId);
+            if (user == null)
+                return new ErrorResult(Messages.UserNotFound);
+
+            var existingClaim = _userOperationClaimDal.Get(uoc => uoc.UserId == userId);
+            if (existingClaim != null)
+            {
+                if (existingClaim.RoleId == roleId)
+                    return new ErrorResult(Messages.UserAlreadyHasThisRole);
+
+                existingClaim.RoleId = roleId;
+                _userOperationClaimDal.Update(existingClaim);
+                return new SuccessResult(Messages.UserRoleUpdated);
+            }
+
+            _userOperationClaimDal.Add(new UserOperationClaim
+            {
+                UserId = userId,
+                RoleId = roleId
+            });
+
+            return new SuccessResult(Messages.RoleAdded);
         }
     }
 }
