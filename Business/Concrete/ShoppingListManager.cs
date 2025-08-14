@@ -24,12 +24,19 @@ namespace Business.Concrete
         [ValidationAspect(typeof(ShoppingListValidator))]
         public IResult Add(ShoppingList shoppingList)
         {
+            shoppingList.CreatedAt = DateTime.Now;
             _shoppingListDal.Add(shoppingList);
             return new SuccessResult(Messages.ShoppingListAdded);
         }
 
         public IResult Delete(ShoppingList shoppingList)
         {
+            var existingList = _shoppingListDal.Get(s => s.Id == shoppingList.Id);
+            if (existingList == null)
+            {
+                return new ErrorResult(Messages.ShoppingListNotFound);
+            }
+
             _shoppingListDal.Delete(shoppingList);
             return new SuccessResult(Messages.ShoppingListDeleted);
         }
@@ -43,9 +50,17 @@ namespace Business.Concrete
         {
             return new SuccessDataResult<ShoppingList>(_shoppingListDal.Get(u => u.Id == id));
         }
+
         [ValidationAspect(typeof(ShoppingListValidator))]
         public IResult Update(ShoppingList shoppingList)
         {
+            // Liste var mı kontrolü
+            var listExists = _shoppingListDal.Get(s => s.Id == shoppingList.Id);
+            if (listExists == null)
+            {
+                return new ErrorResult(Messages.ShoppingListNotFound);
+            }
+
             _shoppingListDal.Update(shoppingList);
             return new SuccessResult(Messages.ShoppingListUpdated);
         }
