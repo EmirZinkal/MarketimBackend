@@ -71,5 +71,6 @@
         public static string UserRoleUpdated = "Kullanıcı rolü güncellendi";
         public static string RoleAdded = "Kullanıcı rolü güncellendi";
 
+        public static string MessageSendTooFrequently = "Çok sık messaj gönderilemez";
     }
 }

@@ -10,5 +10,7 @@ namespace DataAccess.Abstract
 {
     public interface INotificationDal:IEntityRepository<Notification>
     {
+        List<Notification> GetByUser(int userId, bool? isRead, int skip, int take);
+        int GetByUserCount(int userId, bool? isRead);
     }
 }

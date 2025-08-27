@@ -2,6 +2,7 @@
 using Entities.Concrete;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace WebAPI.Controllers
 {
@@ -60,6 +61,47 @@ namespace WebAPI.Controllers
             if (result.Success)
                 return Ok(result);
             return NotFound(result);
+        }
+
+        // Benim bildirimlerim (opsiyonel filtre: isRead)
+        [HttpGet("me")]
+        public IActionResult GetMyNotifications(bool? isRead, int page = 1, int pageSize = 20)
+        {
+            var meStr = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(meStr, out var me)) return Unauthorized();
+
+            var result = _notificationService.GetMyNotifications(me, isRead, page, pageSize);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpGet("me/count")]
+        public IActionResult GetMyNotificationsCount(bool? isRead)
+        {
+            var meStr = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(meStr, out var me)) return Unauthorized();
+
+            var result = _notificationService.GetMyNotificationsCount(me, isRead);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("{id:int}/read")]
+        public IActionResult MarkAsRead(int id)
+        {
+            var meStr = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(meStr, out var me)) return Unauthorized();
+
+            var result = _notificationService.MarkAsRead(id, me);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("read-all")]
+        public IActionResult MarkAllAsRead()
+        {
+            var meStr = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(meStr, out var me)) return Unauthorized();
+
+            var result = _notificationService.MarkAllAsRead(me);
+            return result.Success ? Ok(result) : BadRequest(result);
         }
     }
 }

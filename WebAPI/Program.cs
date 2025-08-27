@@ -45,6 +45,21 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+//Message þifreleme - key: 32 byte (AES-256)
+builder.Services.AddSingleton<byte[]>(sp =>
+{
+    var cfg = sp.GetRequiredService<IConfiguration>();
+    var keyB64 = cfg["Crypto:KeyBase64"];
+    if (string.IsNullOrWhiteSpace(keyB64))
+        throw new Exception("Crypto:KeyBase64 ayarý bulunamadý.");
+
+    var key = Convert.FromBase64String(keyB64);
+    if (key.Length != 32)
+        throw new Exception("Crypto key 32 byte (AES-256) olmalý.");
+
+    return key;
+});
+
 // ?? Default DI yerine Autofac kullanacaðýmýzý belirtiyoruz
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 
@@ -75,6 +90,8 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowOrigin");
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

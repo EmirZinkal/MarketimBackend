@@ -15,5 +15,10 @@ namespace Business.Abstract
         IResult Delete(Notification notification);
         IDataResult<Notification> GetById(int id);
         IDataResult<List<Notification>> GetAll();
+
+        IDataResult<List<Notification>> GetMyNotifications(int userId, bool? isRead, int page, int pageSize);
+        IDataResult<int> GetMyNotificationsCount(int userId, bool? isRead);
+        IResult MarkAsRead(int id, int userId);
+        IResult MarkAllAsRead(int userId);
     }
 }

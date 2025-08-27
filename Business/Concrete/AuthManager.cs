@@ -151,7 +151,7 @@ namespace Business.Concrete
             {
                 client.Credentials = new System.Net.NetworkCredential(
                     "emir.zinkal.34@gmail.com",
-                    "Şifre"
+                    "şifre"
                 );
                 client.EnableSsl = true;
                 var mailMessage = new MailMessage("emir.zinkal.34@gmail.com", to, subject, body);
