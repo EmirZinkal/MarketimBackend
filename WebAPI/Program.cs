@@ -14,14 +14,25 @@ using FluentValidation;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddCors(p => p.AddPolicy("AllowOrigin", builder =>
+
+builder.Services.AddCors(p => p.AddPolicy("AllowOrigin", policy =>
 {
-
-    builder.WithOrigins("https://localhost:7007").AllowAnyMethod().AllowAnyHeader();
-
+    policy
+        .WithOrigins(
+            "http://localhost:3000",   // React dev server (http)
+            "https://localhost:3000",  // React dev server (https)
+            "http://127.0.0.1:3000",   // bazen 127.0.0.1 olarak ï¿½alï¿½ï¿½ï¿½r
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+            "https://localhost:7007"   // Swagger veya backend test icin
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
 }));
+
 
 var tokenOptions = builder.Configuration.GetSection("TokenOptions").Get<TokenOptions>();
 
@@ -41,29 +52,30 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = tokenOptions.Audience,
             IssuerSigningKey = SecurityKeyHelper.CreateSecurityKey(tokenOptions.SecurityKey),
 
-            ClockSkew = TimeSpan.Zero // süre dolduðunda hemen geçersiz olsun
+            ClockSkew = TimeSpan.Zero // sï¿½re dolduï¿½unda hemen geï¿½ersiz olsun
         };
     });
 
-//Message þifreleme - key: 32 byte (AES-256)
+//Message ï¿½ifreleme - key: 32 byte (AES-256)
 builder.Services.AddSingleton<byte[]>(sp =>
 {
     var cfg = sp.GetRequiredService<IConfiguration>();
-    var keyB64 = cfg["Crypto:KeyBase64"];
+    var keyB64 = cfg.GetValue<string>("Crypto:KeyBase64")
+    ?? throw new Exception("Crypto:KeyBase64 ayarÄ± bulunamadÄ±.");
     if (string.IsNullOrWhiteSpace(keyB64))
-        throw new Exception("Crypto:KeyBase64 ayarý bulunamadý.");
+        throw new Exception("Crypto:KeyBase64 ayarÄ± bulunamadÄ±.");
 
     var key = Convert.FromBase64String(keyB64);
     if (key.Length != 32)
-        throw new Exception("Crypto key 32 byte (AES-256) olmalý.");
+        throw new Exception("Crypto key 32 byte (AES-256) olmalÄ±.");
 
     return key;
 });
 
-// ?? Default DI yerine Autofac kullanacaðýmýzý belirtiyoruz
+// ?? Default DI yerine Autofac kullanacaï¿½ï¿½mï¿½zï¿½ belirtiyoruz
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 
-// ?? Autofac Modülünü yüklüyoruz
+// ?? Autofac Modï¿½lï¿½nï¿½ yï¿½klï¿½yoruz
 builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
 {
     containerBuilder.RegisterModule(new AutofacBusinessModule());
@@ -96,5 +108,11 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    Console.WriteLine("âœ… PostgreSQL provider: " + db.Database.ProviderName);
+}
 
 app.Run();

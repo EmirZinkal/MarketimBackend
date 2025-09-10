@@ -13,12 +13,16 @@ namespace DataAccess.Concrete.EntityFramework
 {
     public class EfMessageDal : EfEntityRepositoryBase<Message, AppDbContext>, IMessageDal
     {
+        private readonly AppDbContext _context;
+        public EfMessageDal(AppDbContext context) : base(context)
+        {
+            _context = context;
+        }
+
         public List<Message> GetConversation(int userAId, int userBId, int skip, int take)
         {
-            using var ctx = new AppDbContext();
-
             // A<->B arası tüm mesajlar (gönderici/alıcı değişebilir)
-            var query = ctx.Messages
+            var query = _context.Messages
                 .AsNoTracking()
                 .Where(m =>
                     (m.SenderId == userAId && m.ReceiverId == userBId) ||
@@ -32,9 +36,7 @@ namespace DataAccess.Concrete.EntityFramework
 
         public int GetConversationCount(int userAId, int userBId)
         {
-            using var ctx = new AppDbContext();
-
-            return ctx.Messages
+            return _context.Messages
                 .AsNoTracking()
                 .Count(m =>
                     (m.SenderId == userAId && m.ReceiverId == userBId) ||
@@ -43,9 +45,7 @@ namespace DataAccess.Concrete.EntityFramework
 
         public List<Message> GetConversationRange(int userAId, int userBId, DateTime? from, DateTime? to, int skip, int take)
         {
-            using var ctx = new AppDbContext();
-
-            var q = ctx.Messages.AsNoTracking()
+            var q = _context.Messages.AsNoTracking()
                 .Where(m => (m.SenderId == userAId && m.ReceiverId == userBId) ||
                             (m.SenderId == userBId && m.ReceiverId == userAId));
 
@@ -60,9 +60,7 @@ namespace DataAccess.Concrete.EntityFramework
 
         public int GetConversationRangeCount(int userAId, int userBId, DateTime? from, DateTime? to)
         {
-            using var ctx = new AppDbContext();
-
-            var q = ctx.Messages.AsNoTracking()
+            var q = _context.Messages.AsNoTracking()
                 .Where(m => (m.SenderId == userAId && m.ReceiverId == userBId) ||
                             (m.SenderId == userBId && m.ReceiverId == userAId));
 
@@ -74,9 +72,7 @@ namespace DataAccess.Concrete.EntityFramework
 
         public List<Message> GetByUserRange(int userId, DateTime? from, DateTime? to, int skip, int take)
         {
-            using var ctx = new AppDbContext();
-
-            var q = ctx.Messages.AsNoTracking()
+            var q = _context.Messages.AsNoTracking()
                 .Where(m => m.SenderId == userId || m.ReceiverId == userId);
 
             if (from.HasValue) q = q.Where(m => m.SentAt >= from.Value);
@@ -90,9 +86,7 @@ namespace DataAccess.Concrete.EntityFramework
 
         public int GetByUserRangeCount(int userId, DateTime? from, DateTime? to)
         {
-            using var ctx = new AppDbContext();
-
-            var q = ctx.Messages.AsNoTracking()
+            var q = _context.Messages.AsNoTracking()
                 .Where(m => m.SenderId == userId || m.ReceiverId == userId);
 
             if (from.HasValue) q = q.Where(m => m.SentAt >= from.Value);

@@ -12,5 +12,8 @@ namespace DataAccess.Concrete.EntityFramework
 {
     public class EfPasswordResetTokenDal : EfEntityRepositoryBase<PasswordResetToken, AppDbContext>, IPasswordResetTokenDal
     {
+        public EfPasswordResetTokenDal(AppDbContext context) : base(context)
+        {
+        }
     }
 }

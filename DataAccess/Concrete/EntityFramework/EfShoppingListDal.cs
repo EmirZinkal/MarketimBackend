@@ -10,7 +10,10 @@ using System.Threading.Tasks;
 
 namespace DataAccess.Concrete.EntityFramework
 {
-    public class EfShoppingListDal:EfEntityRepositoryBase<ShoppingList,AppDbContext>,IShoppingListDal
+    public class EfShoppingListDal : EfEntityRepositoryBase<ShoppingList, AppDbContext>, IShoppingListDal
     {
+        public EfShoppingListDal(AppDbContext context) : base(context)
+        {
+        }
     }
 }

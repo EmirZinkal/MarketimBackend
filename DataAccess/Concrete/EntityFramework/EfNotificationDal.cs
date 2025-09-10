@@ -13,10 +13,15 @@ namespace DataAccess.Concrete.EntityFramework
 {
     public class EfNotificationDal : EfEntityRepositoryBase<Notification, AppDbContext>, INotificationDal
     {
+        private readonly AppDbContext _context;
+        public EfNotificationDal(AppDbContext context) : base(context)
+        {
+            _context = context;
+        }
+
         public List<Notification> GetByUser(int userId, bool? isRead, int skip, int take)
         {
-            using var ctx = new AppDbContext();
-            var q = ctx.Notifications.AsNoTracking().Where(n => n.UserId == userId);
+            var q = _context.Notifications.AsNoTracking().Where(n => n.UserId == userId);
 
             if (isRead.HasValue) q = q.Where(n => n.IsRead == isRead.Value);
 
@@ -27,8 +32,7 @@ namespace DataAccess.Concrete.EntityFramework
 
         public int GetByUserCount(int userId, bool? isRead)
         {
-            using var ctx = new AppDbContext();
-            var q = ctx.Notifications.Where(n => n.UserId == userId);
+            var q = _context.Notifications.Where(n => n.UserId == userId);
             if (isRead.HasValue) q = q.Where(n => n.IsRead == isRead.Value);
             return q.Count();
         }

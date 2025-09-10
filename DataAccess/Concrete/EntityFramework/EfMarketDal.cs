@@ -10,7 +10,10 @@ using System.Threading.Tasks;
 
 namespace DataAccess.Concrete.EntityFramework
 {
-    public class EfMarketDal:EfEntityRepositoryBase<Market,AppDbContext>,IMarketDal
+    public class EfMarketDal : EfEntityRepositoryBase<Market, AppDbContext>, IMarketDal
     {
+        public EfMarketDal(AppDbContext context) : base(context)
+        {
+        }
     }
 }

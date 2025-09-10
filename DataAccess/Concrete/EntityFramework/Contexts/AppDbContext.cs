@@ -12,13 +12,7 @@ namespace DataAccess.Concrete.EntityFramework.Contexts
     public class AppDbContext : DbContext
     {
         public AppDbContext() { }
-
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseSqlServer(connectionString: @"Server=(localdb)\mssqllocaldb;Database=MarketimDb;Trusted_Connection=true");
-        }
 
         public DbSet<User> Users { get; set; }
         public DbSet<ShoppingList> ShoppingLists { get; set; }
@@ -34,6 +28,21 @@ namespace DataAccess.Concrete.EntityFramework.Contexts
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                foreach (var property in entityType.GetProperties())
+                {
+                    if (property.ClrType == typeof(DateTime) || property.ClrType == typeof(DateTime?))
+                    {
+                        property.SetValueConverter(new Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<DateTime, DateTime>(
+                            v => v.ToUniversalTime(),
+                            v => DateTime.SpecifyKind(v, DateTimeKind.Utc)
+                        ));
+                    }
+                }
+            }
+
 
             // Self-referencing: Friend
             modelBuilder.Entity<Friend>()
@@ -63,7 +72,7 @@ namespace DataAccess.Concrete.EntityFramework.Contexts
 
             modelBuilder.Entity<Product>()
                 .Property(p => p.Price)
-                .HasColumnType("decimal(10,2)");
+                .HasPrecision(10, 2);
 
             modelBuilder.Entity<UserOperationClaim>()
                 .HasOne(uoc => uoc.User)
@@ -79,6 +88,14 @@ namespace DataAccess.Concrete.EntityFramework.Contexts
                 .HasDiscriminator<string>("Discriminator")
                 .HasValue<User>("User")
                 .HasValue<AppUser>("AppUser");
+
+            modelBuilder.Entity<User>()
+                .Property(x => x.CreatedAt)
+                .HasColumnType("timestamptz");
+
+            modelBuilder.Entity<User>()
+                .Property(x => x.LastLoginAt)
+                .HasColumnType("timestamptz");
 
             modelBuilder.Entity<OperationClaim>().HasData(
                  new OperationClaim { Id = 1, Name = "Admin" },

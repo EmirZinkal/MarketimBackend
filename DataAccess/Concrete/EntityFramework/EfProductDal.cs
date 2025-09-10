@@ -12,5 +12,8 @@ namespace DataAccess.Concrete.EntityFramework
 {
     public class EfProductDal : EfEntityRepositoryBase<Product, AppDbContext>, IProductDal
     {
+        public EfProductDal(AppDbContext context) : base(context)
+        {
+        }
     }
 }

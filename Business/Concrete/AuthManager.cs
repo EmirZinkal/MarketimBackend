@@ -70,6 +70,9 @@ namespace Business.Concrete
             if (!passwordMatch)
                 return new ErrorDataResult<User>(Messages.PasswordError);
 
+            // ✅ Login başarılı, LastLoginAt güncelle
+            userToCheck.Data.LastLoginAt = DateTime.UtcNow;
+            _userService.Update(userToCheck.Data);
             return new SuccessDataResult<User>(userToCheck.Data, Messages.SuccessfulLogin);
         }
 
